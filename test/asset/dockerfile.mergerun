@@ -1,0 +1,11 @@
+FROM debian
+MAINTAINER Ronmi Ren <ronmi.ren@gmail.com>
+RUN a
+RUN b
+RUN c \
+ && d
+RUN e
+RUN f
+RUN ["g","g"]
+RUN h \
+ && i

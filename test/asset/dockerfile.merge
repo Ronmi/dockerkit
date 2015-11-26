@@ -1,0 +1,4 @@
+FROM a
+MAINTAINER Ronmi Ren <ronmi.ren@gmail.com>
+RUN echo 1
+RUN echo 2

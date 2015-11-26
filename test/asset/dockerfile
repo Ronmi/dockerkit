@@ -1,0 +1,21 @@
+FROM debian
+MAINTAINER Ronmi Ren <ronmi.ren@gmail.com>
+ADD ["file1","file2","dest/"]
+RUN echo "test" && echo 'test'
+USER user
+RUN echo "test" && echo 'test'
+USER root
+RUN ["service","foo","start"]
+USER user
+RUN ["service","foo","start"]
+USER root
+RUN ["bash","-l","-c","echo \"test\""]
+USER user
+RUN ["bash","-l","-c","echo \"test\""]
+USER root
+WORKDIR /test
+COPY a b
+ENTRYPOINT echo "test" && echo 'test'
+ENTRYPOINT ["service","foo","start","echo \"orz\""]
+EXPOSE 8080 3128
+VOLUME ["/test"]

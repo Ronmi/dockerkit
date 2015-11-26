@@ -1,0 +1,5 @@
+FROM debian
+MAINTAINER Ronmi Ren <ronmi.ren@gmail.com>
+USER user
+RUN echo 'YXNk'|base64 -d > '/test'
+USER root

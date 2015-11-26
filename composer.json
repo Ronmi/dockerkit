@@ -1,0 +1,25 @@
+{
+    "name": "ronmi/dockerkit",
+    "authors": [
+        {
+            "name": "ronmi",
+            "email": "ronmi@patrolavia.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "4.0.*",
+        "squizlabs/php_codesniffer": "*",
+	"phploc/phploc": "*",
+	"pdepend/pdepend": "*",
+	"phpmd/phpmd": "*",
+	"sebastian/phpcpd": "*"
+    },
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Fruit\\DockerKit\\": "src",
+            "FruitTest\\DockerKit\\": "test"
+        }
+    }
+}

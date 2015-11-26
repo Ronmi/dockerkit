@@ -116,16 +116,33 @@ class Dockerfile
 
     public function textfile($content, $path)
     {
+        return $this->textfileArray(explode("\n", $content), $path);
+    }
+
+    /// Create several textfiles at once.
+    public function textfiles(array $files)
+    {
+        foreach ($files as $path => $content) {
+            if (!is_array($content)) {
+                $content = explode("\n", $content);
+            }
+            $this->textfileArray($content, $path);
+        }
+        return $this;
+    }
+
+    /// Must not have newline character, or command generated will go wrong.
+    public function textfileArray(array $content, $path)
+    {
         $tmpl = 'echo %s|%s';
         $merge = $this->grouping();
         $this->grouping(true);
-        $arr = explode("\n", $content);
-        $first = array_shift($arr);
+        $first = array_shift($content);
         $this->shell(sprintf($tmpl, escapeshellarg($first), 'tee ' .escapeshellarg($path)));
-        foreach ($arr as $c) {
+        foreach ($content as $line) {
             $this->shell(sprintf(
                 $tmpl,
-                escapeshellarg($c),
+                escapeshellarg($line),
                 'tee -a ' . escapeshellarg($path)
             ));
         }

@@ -21,8 +21,8 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
             ->shellAs('echo "test" && ' . "echo 'test'", 'user')
             ->exec(array('service', 'foo', 'start'))
             ->execAs(array('service', 'foo', 'start'), 'user')
-	    ->bash('echo "test"')
-	    ->bashAs('echo "test"', 'user')
+            ->bash('echo "test"')
+            ->bashAs('echo "test"', 'user')
             ->expose(array(8080, 3128))
             ->volume(array('/test'))
             ->user('root')
@@ -56,6 +56,40 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
 
         $g = $this->ndf();
         $g->textfile($content, $path);
+
+        $actual = $g->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.text');
+        $this->assertEquals($expect, $actual);
+    }
+
+    public function testTextfileArray()
+    {
+        $content = array('qwe', 'asd', 'zxc');
+        $path = '/file';
+
+        $g = $this->ndf();
+        $g->textfileArray($content, $path);
+
+        $actual = $g->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.text');
+        $this->assertEquals($expect, $actual);
+    }
+
+    public function textfilesP()
+    {
+        return array(
+            array(array("/file" => array('qwe', 'asd', 'zxc'))),
+            array(array("/file" => "qwe\nasd\nzxc")),
+        );
+    }
+    
+    /**
+     * @dataProvider textfilesP
+     */
+    public function testTextfiles($content)
+    {
+        $g = $this->ndf();
+        $g->textfiles($content);
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.text');
@@ -131,17 +165,17 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
     {
         $g = $this->ndf();
         $g->shell('a')
-          ->shell('b')
-          ->grouping(true)
-          ->shell('c')
-          ->shell('d')
-          ->grouping(false)
-          ->shell('e')
-          ->grouping(true)
-          ->shell('f')
-          ->exec(['g', 'g'])
-          ->shell('h')
-          ->shell('i');
+            ->shell('b')
+            ->grouping(true)
+            ->shell('c')
+            ->shell('d')
+            ->grouping(false)
+            ->shell('e')
+            ->grouping(true)
+            ->shell('f')
+            ->exec(['g', 'g'])
+            ->shell('h')
+            ->shell('i');
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.mergerun');

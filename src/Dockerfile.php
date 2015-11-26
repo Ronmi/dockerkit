@@ -100,11 +100,15 @@ class Dockerfile
 
     public function appendToFile($content, $path)
     {
+        return $this->appendToFileArray(explode("\n", $content), $path);
+    }
+
+    public function appendToFileArray(array $content, $path)
+    {
         $tmpl = 'echo %s|tee -a %s';
         $merge = $this->grouping();
         $this->grouping(true);
-        $arr = explode("\n", $content);
-        foreach ($arr as $c) {
+        foreach ($content as $c) {
             $this->shell(sprintf(
                 $tmpl,
                 escapeshellarg($c),

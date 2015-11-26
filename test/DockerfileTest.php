@@ -181,4 +181,30 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.mergerun');
         $this->assertEquals($expect, $actual);
     }
+
+    public function testAppendToFile()
+    {
+        $content = implode("\n", array('qwe', 'asd', 'zxc'));
+        $path = '/file';
+
+        $g = $this->ndf();
+        $g->appendToFile($content, $path);
+
+        $actual = $g->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.appendtofile');
+        $this->assertEquals($expect, $actual);
+    }
+
+    public function testAppendToFileArray()
+    {
+        $content = array('qwe', 'asd', 'zxc');
+        $path = '/file';
+
+        $g = $this->ndf();
+        $g->appendToFileArray($content, $path);
+
+        $actual = $g->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.appendtofile');
+        $this->assertEquals($expect, $actual);
+    }
 }

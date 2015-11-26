@@ -1,0 +1,5 @@
+FROM debian
+MAINTAINER Ronmi Ren <ronmi.ren@gmail.com>
+RUN echo 'qwe'|tee -a '/file' \
+ && echo 'asd'|tee -a '/file' \
+ && echo 'zxc'|tee -a '/file'

@@ -3,9 +3,8 @@
 namespace Fruit\DockerKit\Distro;
 
 use Fruit\DockerKit\Dockerfile;
-use Fruit\DockerKit\Module;
 
-class Debian implements Module
+class Debian implements Distro
 {
     const SOURCES = '/etc/apt/sources.list';
     const APTCONF = '/etc/apt/apt.conf.d/99dockerkit';

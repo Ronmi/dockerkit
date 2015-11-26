@@ -11,4 +11,9 @@ class MockModule implements Module
     {
         return (new Dockerfile('b', 'Ronmi Ren <ronmi.ren@gmail.com>'))->shell('echo 2');
     }
+
+    public function ensureBash()
+    {
+        return $this;
+    }
 }

@@ -37,6 +37,7 @@ class Dockerfile
         $this->from = $from;
         $this->user = $defaultUser;
         $this->maintainer = $maintainer;
+        $this->data = array();
         $this->exposed_port = array();
         $this->mountable_volume = array();
         $this->grouping = false;

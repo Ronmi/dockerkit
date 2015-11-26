@@ -1,0 +1,25 @@
+FROM 
+MAINTAINER 
+RUN apt-get -y pkg1 \
+ && apt-get clean \
+ && echo 'repo1'|tee '/etc/apt/sources.list' \
+ && apt-get update \
+ && apt-get -y pkg2 \
+ && apt-get clean \
+ && echo 'repo2'|tee -a '/etc/apt/sources.list' \
+ && echo 'asd'|tee '/tmp/apt.key' \
+ && cat /tmp/apt.key|apt-keys add - \
+ && rm /tmp/apt.key \
+ && apt-key adv --recv-key 1234 --keyserver a.b.c \
+ && echo 'conf'|tee -a '/etc/apt/apt.conf.d/99dockerkit' \
+ && echo '{'|tee -a '/etc/apt/apt.conf.d/99dockerkit' \
+ && echo '  "val1";'|tee -a '/etc/apt/apt.conf.d/99dockerkit' \
+ && echo '  "val2";'|tee -a '/etc/apt/apt.conf.d/99dockerkit' \
+ && echo '}'|tee -a '/etc/apt/apt.conf.d/99dockerkit' \
+ && echo 'pref1: val1-1'|tee -a '/etc/apt/preferences.d/99dockerkit' \
+ && echo 'pref2: val2-1'|tee -a '/etc/apt/preferences.d/99dockerkit' \
+ && apt-get update \
+ && apt-get -y pkg3 \
+ && apt-get clean \
+ && echo 'dash dash/sh boolean false'|debconf-set-selections \
+ && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash

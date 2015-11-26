@@ -52,7 +52,7 @@ So you can pipe it to `docker build` like `php my_generator.php|docker build -t 
 
 ### Grouping
 
-Grouping can merge shell commands into one `RUN` command, recude intermediate layers needed when building image.
+Grouping can merge shell commands into one `RUN` command, reduce intermediate layers needed when building image.
 
 ## License
 

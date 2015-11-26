@@ -98,7 +98,7 @@ class Dockerfile
         return $this->shell('apt-get install -y ' . implode(' ', $packages) . ' && apt-get clean');
     }
 
-    public function appendTofile($content, $path)
+    public function appendToFile($content, $path)
     {
         $tmpl = 'echo %s|tee -a %s';
         $merge = $this->grouping();

@@ -4,26 +4,30 @@ DockerKit is a set of tools helping you manage docker container/image from php.
 
 DockerKit supports only bash as default shell, using other shell like zsh is not supported.
 
-DockerKit provides short-hand methods for installing package with `apt`. But feel free to send PR about `rpm` or any other package management systems.
-
 ## Synopsis
 
 Write your dockerfile generator:
 
 ```php
-$f = new DockerKit\Dockerfile('debian:latest', 'me <maintainer@example.com>');
+$f = new Fruit\DockerKit\Dockerfile('debian:latest', 'John Doe <john@example.com>');
 
-$f->shell('apt-get update')
-  ->aptgets(['php5-fpm', 'php5'])
-  ->grouping(true)
-  ->textfile('#!/bin/bash
-service php5-fpm restart
-trap "echo Stopping fpm...;service php5-fpm stop" INT TERM
-(kill -STOP $BASHPID)&
-wait', '/start.sh')
-  ->shell('chmod a+x /start.sh')
-  ->grouping(false)
-  ->entrypoint(['bash', '/start.sh']);
+$f
+    ->import(
+        (new Fruit\DockerKit\Distro\Debian)
+        ->install(['php5-fpm', 'php5'])
+        ->ensureBash()
+    )
+    ->grouping(true)
+    ->textfileArray([
+        '#!/bin/bash',
+        'service php5-fpm restart',
+        'trap "echo Stopping fpm...;service php5-fpm stop" INT TERM',
+        '(kill -STOP $BASHPID)&',
+        'wait',
+    ], '/start.sh')
+    ->shell('chmod a+x /start.sh')
+    ->grouping(false)
+    ->entrypoint(['bash', '/start.sh']);
 
 echo $f->generate();
 ```
@@ -32,9 +36,12 @@ which generates
 
 ```
 FROM debian:latest
-MAINTAINER me <maintainer@example.com>
-RUN apt-get update
-RUN apt-get install -y php5-fpm php5 && apt-get clean
+MAINTAINER John Doe <john@example.com>
+RUN apt-get update \
+ && apt-get -y php5-fpm php5 \
+ && apt-get clean \
+ && echo 'dash dash/sh boolean false'|debconf-set-selections \
+ && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 RUN echo '#!/bin/bash'|tee '/start.sh' \
  && echo 'service php5-fpm restart'|tee -a '/start.sh' \
  && echo 'trap "echo Stopping fpm...;service php5-fpm stop" INT TERM'|tee -a '/start.sh' \

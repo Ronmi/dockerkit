@@ -122,32 +122,6 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expect, $actual);
     }
 
-    public function testAptget()
-    {
-        $g = $this->ndf();
-        $g->repo(
-            'deb http://ftp.debian.org/debian jessie main',
-            '/etc/apt/sources.list.d/test.list'
-        );
-        $g->aptget('pkg1');
-        $g->aptgets(array('pkg2', 'pkg3'));
-
-        $actual = $g->generate();
-        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.aptget');
-        $this->assertEquals($expect, $actual);
-    }
-
-    public function testDebconf()
-    {
-        $g = $this->ndf();
-        $g->debconf('dash dash/sh boolean false');
-        $g->reconf('dash');
-
-        $actual = $g->generate();
-        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.debconf');
-        $this->assertEquals($expect, $actual);
-    }
-
     public function testMerge()
     {
         $a = new Dockerfile('a', 'Ronmi Ren <ronmi.ren@gmail.com>');

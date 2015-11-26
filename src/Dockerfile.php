@@ -57,48 +57,6 @@ class Dockerfile
         return $this;
     }
 
-    public function debconf($data)
-    {
-        return $this->shell(sprintf(
-            'echo %s|debconf-set-selections',
-            escapeshellarg($data)
-        ));
-    }
-
-    public function reconf($pkg)
-    {
-        return $this->shell(sprintf(
-            'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure %s',
-            $pkg
-        ));
-    }
-
-    /// Just a short-hand method
-    public function enableBash()
-    {
-        $m = $this->grouping();
-        $this->grouping(true);
-        $this->debconf('dash dash/sh boolean false');
-        $this->reconf('dash');
-        return $this->grouping($m);
-    }
-
-    public function repo($content, $path)
-    {
-        $this->textfile($content, $path);
-        return $this->shell('apt-get update');
-    }
-
-    public function aptget($package)
-    {
-        return $this->shell('apt-get install -y ' . $package . ' && apt-get clean');
-    }
-
-    public function aptgets(array $packages)
-    {
-        return $this->shell('apt-get install -y ' . implode(' ', $packages) . ' && apt-get clean');
-    }
-
     public function appendToFile($content, $path)
     {
         return $this->appendToFileArray(explode("\n", $content), $path);

@@ -242,8 +242,9 @@ class Dockerfile
         return $this;
     }
 
-    public function merge(Dockerfile $file)
+    public function import(Module $module)
     {
+        $file = $module->export();
         $this->data = array_merge($this->data, $file->data);
         $this->expose($file->exposed_port);
         $this->volume($file->mountable_volume);

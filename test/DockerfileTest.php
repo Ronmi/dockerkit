@@ -122,16 +122,15 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expect, $actual);
     }
 
-    public function testMerge()
+    public function testImport()
     {
         $a = new Dockerfile('a', 'Ronmi Ren <ronmi.ren@gmail.com>');
         $a->shell('echo 1');
 
-        $b = new Dockerfile('b', 'Ronmi Ren <ronmi.ren@gmail.com>');
-        $b->shell('echo 2');
+        $m = new MockModule;
 
-        $actual = $a->merge($b)->generate();
-        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.merge');
+        $actual = $a->import($m)->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.import');
         $this->assertEquals($expect, $actual);
     }
 

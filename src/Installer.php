@@ -2,8 +2,8 @@
 
 namespace Fruit\DockerKit;
 
-interface Module
+interface Installer
 {
     /// return a Dockerfile instance
-    public function export();
+    public function installTo(Dockerfile $dest);
 }

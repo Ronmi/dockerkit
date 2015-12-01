@@ -7,6 +7,10 @@ namespace Fruit\DockerKit;
  */
 class Dockerfile
 {
+    public static $supportedDistro = array(
+        'debian' => 'Fruit\DockerKit\Distro\Debian',
+    );
+
     private $data;
     private $user;
     private $from;
@@ -16,6 +20,8 @@ class Dockerfile
     private $grouping;
     private $tmpGroup;
     private $mergeBegin;
+    private $currentDistro;
+    private $distroName;
 
     private function json($str)
     {
@@ -44,6 +50,23 @@ class Dockerfile
         $this->grouping = false;
         $this->tmpGroup = array();
         $this->mergeBegin = false;
+        $this->currentDistro = null;
+        $this->distroName = '';
+    }
+
+    public function distro($distro = null)
+    {
+        if ($distro === null) {
+            return $this->distroName;
+        }
+        if (array_key_exists($distro, self::supportedDistro)) {
+            $d = self::supportedDistro[$distro];
+            if (!($this->currentDistro instanceof $d)) {
+                $this->distroName = $distro;
+                $this->currentDistro = new $d($this);
+            }
+        }
+        return $this;
     }
 
     public function grouping($merge = null)
@@ -293,5 +316,16 @@ class Dockerfile
             $ret .= 'VOLUME ' . $this->jsonStringArray($vols) . "\n";
         }
         return $ret;
+    }
+
+    /// wrap distro
+    public function __call($name, array $args)
+    {
+        if (method_exists('Fruit\DockerKit\Distro\Distro', $name)) {
+            $this->gStart(true);
+            call_user_func_array(array($this->currentDistro, $name), $args);
+            $this->gEnd();
+        }
+        return $this;
     }
 }

@@ -4,39 +4,35 @@ namespace FruitTest\DockerKit\Distro;
 
 use PHPUnit_Framework_TestCase;
 use Fruit\DockerKit\Distro\Debian;
+use Fruit\DockerKit\Dockerfile;
 
 class DebianTest extends PHPUnit_Framework_TestCase
 {
-    public function debianP()
+    public function testDebian()
     {
-        return array(
-            array(new Debian(true), 'Debian.update'),
-            array(new Debian(false), 'Debian.noupdate'),
-        );
-    }
-
-    /**
-     * @dataProvider debianP
-     */
-    public function testDebian($debian, $asset)
-    {
+        $dest = new Dockerfile('debian', 'debian');
+        $debian = new Debian($dest->grouping(true));
         $debian
-            ->aptget(array('pkg1'))
-            ->setRepo('repo1')
-            ->aptget(array('pkg2'))
-            ->addRepo('repo2')
-            ->addKeyByString('asd')
-            ->addKeyByFingerprint('1234', 'a.b.c')
-            ->aptconf('conf', array('val1', 'val2'))
-            ->aptpref(array(
-                'pref1' => 'val1-1',
-                'pref2' => 'val2-1',
-            ))
-            ->aptget(array('pkg3'))
-            ->ensureBash();
+            ->install(array('pkg1'))
+            ->repo(['repo1' => null, 'repo2' => '1234'])
+            ->install(array('pkg2'))
+            ->pmsconf([
+                'conf' => ['conf' => ['val1', 'val2']],
+                'pref' => [
+                    'pref1' => 'val1-1',
+                    'pref2' => 'val2-1',
+                ],
+            ])
+            ->install(array('pkg3'))
+            ->install(array('pkg4'))
+            ->pkgconf('pkg1')
+            ->pkgconf('pkg2', 'data')
+            ->pkgconf('pkg5', ['data' => 'data'])
+            ->ensureBash()
+            ->tz('Asia/Taipei');
 
-        $expect = file_get_contents(__DIR__ . '/asset/' . $asset);
-        $actual = $debian->export()->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/Debian.update');
+        $actual = $dest->generate();
         $this->assertEquals($expect, $actual);
     }
 }

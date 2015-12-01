@@ -11,65 +11,122 @@ class Debian implements Distro
     const APTPREF = '/etc/apt/preferences.d/99dockerkit';
     private $dest;
     private $updated;
+    private $installedPackages;
 
-    public function __construct($needUpdate = true)
+    public function __construct(Dockerfile $dest)
     {
-        $this->dest = new Dockerfile('', '');
-        $this->dest->grouping(true);
-        $this->updated = $needUpdate != true;
+        $this->dest = $dest;
+        $this->updated = false;
+        $this->installedPackages = array();
     }
 
-    public function aptget(array $packages)
+    private function inst1(array $packages)
+    {
+        $this->dest
+            ->gStart(true)
+            ->shell('apt-get install -y ' . implode(' ', $packages))
+            ->shell('apt-get clean')
+            ->gEnd();
+        return $this;
+    }
+
+    private function inst2(array $packages, array $cmds)
+    {
+        $last = array_pop($cmds);
+        if ($last != 'apt-get clean') {
+            return $this->inst1($packages);
+        }
+
+        $last = array_pop($cmds);
+        if (substr($last, 0, 19) != 'apt-get install -y ') {
+            return $this->inst1($packages);
+        }
+
+        $last .= ' ' . implode(' ', $packages);
+        $cmds[] = $last;
+        $cmds[] = 'apt-get clean';
+        $this->dest->lastNCommand(1, array($cmds));
+        return $this;
+    }
+
+    public function install(array $packages)
     {
         if (!$this->updated) {
             $this->dest->shell('apt-get update');
             $this->updated = true;
         }
-        $this->dest
-            ->shell('apt-get install -y ' . implode(' ', $packages))
-            ->shell('apt-get clean');
-        return $this;
+        $packages = array_diff($packages, $this->installedPackages);
+        if (count($packages) < 1) {
+            return $this;
+        }
+
+        $this->installedPackages = array_merge($this->installedPackages, $packages);
+
+        $res = $this->dest->lastNCommand();
+        if (isset($res[0]) and is_array($res[0])) {
+            return $this->inst2($packages, $res[0]);
+        }
+
+        return $this->inst1($packages);
     }
 
-    public function addKeyByURI($uri)
+    private function addKeyByURI($uri)
     {
         $keyStr = file_get_contents($uri);
         $this->updated = false;
         return $this->addKeyByString($keyStr);
     }
 
-    public function addKeyByString($key)
+    private function addKeyByString($key)
     {
+        if ($key == '') {
+            return $this;
+        }
         $this->dest
+            ->gStart(true)
             ->textfile($key, '/tmp/apt.key')
             ->shell('cat /tmp/apt.key|apt-keys add -')
-            ->shell('rm /tmp/apt.key');
+            ->shell('rm /tmp/apt.key')
+            ->gEnd();
         $this->updated = false;
         return $this;
     }
 
-    public function addKeyByFingerprint($fingerprint, $server = 'pgp.mit.edu')
+    private function addKeyByFingerprint($fingerprint, $server = null)
     {
+        if (!$server) {
+            $server = 'pgp.mit.edu';
+        }
         $this->dest->shell("apt-key adv --recv-key $fingerprint --keyserver $server");
         $this->updated = false;
         return $this;
     }
 
-    public function setRepo($repo)
+    public function repo(array $repos)
     {
-        $this->dest->textfile($repo, self::SOURCES);
+        $repoLines = array_keys($repos);
+        $this->dest->textfileArray($repoLines, self::SOURCES);
         $this->updated = false;
+
+        foreach ($repos as $v) {
+            if ($v == null) {
+                continue;
+            }
+
+            if (is_array($v)) {
+                $this->addKeyByFingerprint($v[0], $v[1]);
+                continue;
+            }
+            if (ctype_xdigit($v)) {
+                $this->addKeyByFingerprint($v);
+                continue;
+            }
+            $this->addKeyByURI($v);
+        }
         return $this;
     }
 
-    public function addRepo($repo)
-    {
-        $this->dest->appendToFile($repo, self::SOURCES);
-        $this->updated = false;
-        return $this;
-    }
-
-    public function aptconf($key, array $value)
+    private function aptconf($key, array $value)
     {
         $head = array(
             $key,
@@ -83,7 +140,7 @@ class Debian implements Distro
         return $this;
     }
 
-    public function aptpref(array $pref)
+    private function aptpref(array $pref)
     {
         $v = array_map(function ($k, $v) {
             return "$k: $v";
@@ -92,7 +149,22 @@ class Debian implements Distro
         return $this;
     }
 
-    public function debconf($data)
+    public function pmsconf(array $config)
+    {
+        if (isset($config['conf'])) {
+            foreach ($config['conf'] as $k => $v) {
+                $this->aptconf($k, $v);
+            }
+        }
+
+        if (isset($config['pref'])) {
+            $this->aptpref($config['pref']);
+        }
+
+        return $this;
+    }
+
+    private function debconf($data)
     {
         $this->dest->shell(sprintf(
             'echo %s|debconf-set-selections',
@@ -101,13 +173,29 @@ class Debian implements Distro
         return $this;
     }
 
-    public function reconf($pkg)
+    private function reconf($pkg)
     {
         $this->dest->shell(sprintf(
             'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure %s',
             $pkg
         ));
         return $this;
+    }
+
+    public function pkgconf($pkg, $config = null)
+    {
+        if (isset($config['data'])) {
+            $this->debconf($pkg . ' ' . $config['data']);
+            if (isset($config['reconf'])) {
+                $this->reconf($pkg);
+            }
+            return $this;
+        }
+
+        if ($config) {
+            $this->debconf($pkg . ' ' . $config);
+        }
+        return $this->reconf($pkg);
     }
 
     public function ensureBash()
@@ -117,27 +205,10 @@ class Debian implements Distro
         return $this;
     }
 
-    public function setTimezone($tz)
+    public function tz($tz)
     {
         $this->dest->textfile($tz, '/etc/timezone');
         $this->reconf('tzdata');
         return $this;
-    }
-
-    public function aptBuildDep(array $pkgs)
-    {
-        $this->dest->shell('apt-get build-dep -y ' . implode(' ', $pkgs));
-        return $this;
-    }
-
-    public function aptClean()
-    {
-        $this->dest->shell('apt-get clean');
-        return $this;
-    }
-
-    public function export()
-    {
-        return $this->dest;
     }
 }

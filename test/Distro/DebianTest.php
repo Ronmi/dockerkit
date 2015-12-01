@@ -14,16 +14,16 @@ class DebianTest extends PHPUnit_Framework_TestCase
             array(new Debian(false), 'Debian.noupdate'),
         );
     }
-    
+
     /**
      * @dataProvider debianP
      */
     public function testDebian($debian, $asset)
     {
         $debian
-            ->install(array('pkg1'))
+            ->aptget(array('pkg1'))
             ->setRepo('repo1')
-            ->install(array('pkg2'))
+            ->aptget(array('pkg2'))
             ->addRepo('repo2')
             ->addKeyByString('asd')
             ->addKeyByFingerprint('1234', 'a.b.c')
@@ -32,9 +32,9 @@ class DebianTest extends PHPUnit_Framework_TestCase
                 'pref1' => 'val1-1',
                 'pref2' => 'val2-1',
             ))
-            ->install(array('pkg3'))
+            ->aptget(array('pkg3'))
             ->ensureBash();
-        
+
         $expect = file_get_contents(__DIR__ . '/asset/' . $asset);
         $actual = $debian->export()->generate();
         $this->assertEquals($expect, $actual);

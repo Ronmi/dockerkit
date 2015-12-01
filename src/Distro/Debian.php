@@ -18,15 +18,15 @@ class Debian implements Distro
         $this->dest->grouping(true);
         $this->updated = $needUpdate != true;
     }
-    
-    public function install(array $packages)
+
+    public function aptget(array $packages)
     {
         if (!$this->updated) {
             $this->dest->shell('apt-get update');
             $this->updated = true;
         }
         $this->dest
-            ->shell('apt-get -y ' . implode(' ', $packages))
+            ->shell('apt-get install -y ' . implode(' ', $packages))
             ->shell('apt-get clean');
         return $this;
     }

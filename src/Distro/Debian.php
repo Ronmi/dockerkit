@@ -116,7 +116,26 @@ class Debian implements Distro
         $this->reconf('dash');
         return $this;
     }
-    
+
+    public function setTimezone($tz)
+    {
+        $this->dest->textfile($tz, '/etc/timezone');
+        $this->reconf('tzdata');
+        return $this;
+    }
+
+    public function aptBuildDep(array $pkgs)
+    {
+        $this->dest->shell('apt-get build-dep -y ' . implode(' ', $pkgs));
+        return $this;
+    }
+
+    public function aptClean()
+    {
+        $this->dest->shell('apt-get clean');
+        return $this;
+    }
+
     public function export()
     {
         return $this->dest;

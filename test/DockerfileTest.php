@@ -82,7 +82,7 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
             array(array("/file" => "qwe\nasd\nzxc")),
         );
     }
-    
+
     /**
      * @dataProvider textfilesP
      */
@@ -119,18 +119,6 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.binary.user');
-        $this->assertEquals($expect, $actual);
-    }
-
-    public function testImport()
-    {
-        $a = new Dockerfile('a', 'Ronmi Ren <ronmi.ren@gmail.com>');
-        $a->shell('echo 1');
-
-        $m = new MockModule;
-
-        $actual = $a->import($m)->generate();
-        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.import');
         $this->assertEquals($expect, $actual);
     }
 
@@ -178,6 +166,21 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.appendtofile');
+        $this->assertEquals($expect, $actual);
+    }
+
+    public function testLastNCommand()
+    {
+        $g = $this->ndf();
+        $g
+            ->shell('a')
+            ->shell('b');
+        $res = $g->lastNCommand(2);
+        $res[0] .= 'c';
+        $g->lastNCommand(2, $res);
+
+        $actual = $g->generate();
+        $expect = file_get_contents(__DIR__ . '/asset/dockerfile.lastn');
         $this->assertEquals($expect, $actual);
     }
 }

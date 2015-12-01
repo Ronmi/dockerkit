@@ -14,6 +14,7 @@ class Dockerfile
     private $mountable_volume;
     private $maintainer;
     private $grouping;
+    private $tmpGroup;
     private $mergeBegin;
 
     private function json($str)
@@ -41,6 +42,7 @@ class Dockerfile
         $this->exposed_port = array();
         $this->mountable_volume = array();
         $this->grouping = false;
+        $this->tmpGroup = array();
         $this->mergeBegin = false;
     }
 
@@ -55,6 +57,20 @@ class Dockerfile
             $this->mergeBegin = false;
         }
         return $this;
+    }
+
+    public function gStart($bool)
+    {
+        array_push($this->tmpGroup, $this->grouping);
+        return $this->grouping($bool);
+    }
+
+    public function gEnd()
+    {
+        if (count($this->tmpGroup) < 1) {
+            return $this;
+        }
+        return $this->grouping(array_pop($this->tmpGroup));
     }
 
     public function appendToFile($content, $path)
@@ -144,17 +160,16 @@ class Dockerfile
     public function shell($cmd)
     {
         if ($this->grouping) {
-            if ($this->mergeBegin) {
-                $last = count($this->data) - 1;
-                $data = $this->data[$last];
-                if (substr($data, 0, 4) == 'RUN ' and !is_array(json_decode(substr($data, 4)))) {
-                    $this->data[$last] .= " \\\n && " . $cmd;
-                    return $this;
-                }
-            } else {
-                $this->mergeBegin = true;
+            $last = count($this->data) - 1;
+            if ($last >= 0 and is_array($this->data[$last])) {
+                $this->data[$last][] = $cmd;
+                return $this;
             }
+
+            $this->data[] = array($cmd);
+            return $this;
         }
+
         $this->data[] = 'RUN ' . $cmd;
         return $this;
     }
@@ -242,20 +257,33 @@ class Dockerfile
         return $this;
     }
 
-    public function import(Module $module)
+    public function lastNCommand($n = 0, array $rep = null)
     {
-        $file = $module->export();
-        $this->data = array_merge($this->data, $file->data);
-        $this->expose($file->exposed_port);
-        $this->volume($file->mountable_volume);
-        return $this;
+        if ($n < 1) {
+            $n = 1;
+        }
+
+        if ($rep === null) {
+            return array_slice($this->data, count($this->data) - $n);
+        }
+
+        $this->data = array_merge(
+            array_slice($this->data, 0, count($this->data) - $n),
+            $rep
+        );
     }
 
     public function generate()
     {
         $ret = 'FROM ' . $this->from . "\n";
         $ret .= 'MAINTAINER ' . $this->maintainer . "\n";
-        $ret .= implode("\n", $this->data) . "\n";
+        $data = array_map(function ($v) {
+            if (is_array($v)) {
+                return 'RUN ' . implode(" \\\n && ", $v);
+            }
+            return $v;
+        }, $this->data);
+        $ret .= implode("\n", $data) . "\n";
         if (count($this->exposed_port) > 0) {
             $ports = array_unique($this->exposed_port);
             $ret .= 'EXPOSE ' . implode(' ', $ports) . "\n";

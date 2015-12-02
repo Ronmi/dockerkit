@@ -71,6 +71,9 @@ class Dockerfile
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function grouping($merge = null)
     {
         if ($merge === null) {
@@ -84,12 +87,18 @@ class Dockerfile
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function gStart($bool)
     {
         array_push($this->tmpGroup, $this->grouping);
         return $this->grouping($bool);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function gEnd()
     {
         if (count($this->tmpGroup) < 1) {
@@ -98,11 +107,17 @@ class Dockerfile
         return $this->grouping(array_pop($this->tmpGroup));
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function appendToFile($content, $path)
     {
         return $this->appendToFileArray(explode("\n", $content), $path);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function appendToFileArray(array $content, $path)
     {
         $tmpl = 'echo %s|tee -a %s';
@@ -118,12 +133,19 @@ class Dockerfile
         return $this->grouping($merge);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function textfile($content, $path)
     {
         return $this->textfileArray(explode("\n", $content), $path);
     }
 
-    /// Create several textfiles at once.
+    /**
+     * Create several textfiles at once.
+     *
+     * @return Dockerfile
+     */
     public function textfiles(array $files)
     {
         foreach ($files as $path => $content) {
@@ -135,7 +157,10 @@ class Dockerfile
         return $this;
     }
 
-    /// Must not have newline character, or command generated will go wrong.
+    /**
+     * Must not have newline character, or command generated will go wrong.
+     * @return Dockerfile
+     */
     public function textfileArray(array $content, $path)
     {
         $tmpl = 'echo %s|%s';
@@ -153,6 +178,9 @@ class Dockerfile
         return $this->grouping($merge);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function textfileAs($content, $path, $user)
     {
         $olduser = $this->getUser();
@@ -161,12 +189,18 @@ class Dockerfile
         return $this->user($olduser);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function binaryfile($binary_string, $path)
     {
         $str = base64_encode($binary_string);
         return $this->shell(sprintf("echo '%s'|base64 -d > '%s'", $str, $path));
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function binaryfileAs($binary_string, $path, $user)
     {
         $olduser = $this->getUser();
@@ -176,12 +210,18 @@ class Dockerfile
         return $this->user($olduser);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function add(array $files)
     {
         $this->data[] = 'ADD ' . $this->jsonStringArray($files);
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function shell($cmd)
     {
         if ($this->grouping) {
@@ -199,6 +239,9 @@ class Dockerfile
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function shellAs($cmd, $user)
     {
         $olduser = $this->getUser();
@@ -207,12 +250,18 @@ class Dockerfile
         return $this->user($olduser);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function exec(array $cmd)
     {
         $this->data[] = 'RUN ' . $this->jsonStringArray($cmd);
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function execAs(array $cmd, $user)
     {
         $olduser = $this->getUser();
@@ -221,11 +270,17 @@ class Dockerfile
         return $this->user($olduser);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function bash($cmd)
     {
         return $this->exec(array('bash', '-l', '-c', $cmd));
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function bashAs($cmd, $user)
     {
         $olduser = $this->getUser();
@@ -234,6 +289,9 @@ class Dockerfile
         return $this->user($olduser);
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function entrypoint($cmd)
     {
         $data = 'ENTRYPOINT ' . $this->json($cmd);
@@ -244,18 +302,27 @@ class Dockerfile
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function expose(array $port)
     {
         $this->exposed_port = array_merge($this->exposed_port, $port);
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function volume(array $vol)
     {
         $this->mountable_volume = array_merge($this->mountable_volume, $vol);
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function user($user)
     {
         if ($user != $this->user) {
@@ -265,11 +332,18 @@ class Dockerfile
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function uStart($user)
     {
         $this->tmpUser[] = $this->user;
         return $this->user($user);
     }
+
+    /**
+     * @return Dockerfile
+     */
     public function uEnd()
     {
         if (count($this->tmpUser) < 1) {
@@ -277,23 +351,36 @@ class Dockerfile
         }
         return $this->user(array_pop($this->tmpUser));
     }
+
+    /**
+     * @return Dockerfile
+     */
     public function getUser()
     {
         return $this->user;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function workdir($path)
     {
         $this->data[] = 'WORKDIR ' . $path;
         return $this;
     }
 
+    /**
+     * @return Dockerfile
+     */
     public function raw($str)
     {
         $this->data[] = $str;
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function lastNCommand($n = 0, array $rep = null)
     {
         if ($n < 1) {
@@ -310,6 +397,9 @@ class Dockerfile
         );
     }
 
+    /**
+     * @return string
+     */
     public function generate()
     {
         $ret = 'FROM ' . $this->from . "\n";

@@ -13,6 +13,7 @@ RUN ["bash","-l","-c","echo \"test\""]
 USER user
 RUN ["bash","-l","-c","echo \"test\""]
 USER root
+RUN sudo -u root '-E' -- echo "test"
 WORKDIR /test
 COPY a b
 ENTRYPOINT echo "test" && echo 'test'

@@ -268,6 +268,33 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
+    public function sudo($cmd, $user = '', array $args = null)
+    {
+        if ($user == '') {
+            $user = 'root';
+        }
+        if (!is_array($args)) {
+            $args = array();
+        }
+        $args = implode(' ', array_map(function ($val) {
+            return escapeshellarg($val);
+        }, $args));
+
+        return $this->shell(sprintf(
+            'sudo -u %s %s -- %s',
+            $user,
+            $args,
+            str_replace(
+                "\n",
+                "\\\n",
+                $cmd
+            )
+        ));
+    }
+
+    /**
+     * @return Dockerfile
+     */
     public function exec(array $cmd)
     {
         $this->data[] = 'RUN ' . $this->jsonStringArray($cmd);

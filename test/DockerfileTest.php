@@ -23,6 +23,7 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
             ->execAs(array('service', 'foo', 'start'), 'user')
             ->bash('echo "test"')
             ->bashAs('echo "test"', 'user')
+            ->sudo('echo "test"', '', ['-E'])
             ->expose(array(8080, 3128))
             ->volume(array('/test'))
             ->user('root')

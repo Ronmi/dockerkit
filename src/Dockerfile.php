@@ -24,6 +24,15 @@ class Dockerfile
     private $distroName;
     private $tmpUser;
 
+    private function escapePath($path)
+    {
+        $file = str_replace("\\", "\\\\", $path);
+        $file = str_replace(' ', "\\ ", $file);
+        $file = str_replace('"', "\\\"", $file);
+        $file = str_replace("'", "\\'", $file);
+        return $file;
+    }
+
     private function json($str)
     {
         if (defined('JSON_UNESCAPED_SLASHES')) {
@@ -124,11 +133,13 @@ class Dockerfile
         $merge = $this->grouping();
         $this->grouping(true);
         foreach ($content as $c) {
-            $this->shell(sprintf(
-                $tmpl,
-                escapeshellarg($c),
-                escapeshellarg($path)
-            ));
+            $this->shell(
+                sprintf(
+                    $tmpl,
+                    escapeshellarg($c),
+                    $this->escapePath($path)
+                )
+            );
         }
         return $this->grouping($merge);
     }
@@ -163,17 +174,19 @@ class Dockerfile
      */
     public function textfileArray(array $content, $path)
     {
+        $file = $this->escapePath($path);
         $tmpl = 'echo %s|%s';
         $merge = $this->grouping();
         $this->grouping(true);
         $first = array_shift($content);
-        $this->shell(sprintf($tmpl, escapeshellarg($first), 'tee ' .escapeshellarg($path)));
+        $this->shell(sprintf($tmpl, escapeshellarg($first), 'tee ' . $file));
+
         foreach ($content as $line) {
             $this->shell(sprintf(
                 $tmpl,
                 escapeshellarg($line),
-                'tee -a ' . escapeshellarg($path)
             ));
+                    'tee -a ' . $file
         }
         return $this->grouping($merge);
     }
@@ -195,7 +208,7 @@ class Dockerfile
     public function binaryfile($binary_string, $path)
     {
         $str = base64_encode($binary_string);
-        return $this->shell(sprintf("echo '%s'|base64 -d > '%s'", $str, $path));
+        return $this->shell(sprintf("echo '%s'|base64 -d > %s", $str, $this->escapePath($path)));
     }
 
     /**
@@ -206,7 +219,7 @@ class Dockerfile
         $str = base64_encode($binary_string);
         return $this
             ->uStart($user)
-            ->shell(sprintf("echo '%s'|base64 -d > '%s'", $str, $path))
+            ->shell(sprintf("echo '%s'|base64 -d > %s", $str, $this->escapePath($path)))
             ->uEnd();
     }
 

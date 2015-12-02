@@ -1,6 +1,6 @@
 <?php
 
-namespace Fruit\DockerKit\Dockerfile;
+namespace Fruit\DockerKit\Helper;
 
 trait File
 {

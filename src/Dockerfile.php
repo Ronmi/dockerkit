@@ -7,12 +7,12 @@ namespace Fruit\DockerKit;
  */
 class Dockerfile
 {
-    use Dockerfile\Distro;
-    use Dockerfile\Exec;
-    use Dockerfile\User;
-    use Dockerfile\File;
-    use Dockerfile\FileSystem;
-    use Dockerfile\Misc;
+    use Helper\Distro;
+    use Helper\Exec;
+    use Helper\User;
+    use Helper\File;
+    use Helper\FileSystem;
+    use Helper\Misc;
 
     private $data;
     private $user;

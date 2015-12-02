@@ -1,0 +1,26 @@
+FROM debian
+MAINTAINER Ronmi Ren <ronmi.ren@gmail.com>
+RUN echo '#!/bin/bash'|tee /entry.sh \
+ && echo 'function start() {'|tee -a /entry.sh \
+ && echo '  service nginx start'|tee -a /entry.sh \
+ && echo '  service php-fpm start'|tee -a /entry.sh \
+ && echo '  service mysql-server start'|tee -a /entry.sh \
+ && echo '}'|tee -a /entry.sh \
+ && echo ''|tee -a /entry.sh \
+ && echo 'function stop() {'|tee -a /entry.sh \
+ && echo '  service nginx stop'|tee -a /entry.sh \
+ && echo '  service php-fpm stop'|tee -a /entry.sh \
+ && echo '  service mysql-server stop'|tee -a /entry.sh \
+ && echo '}'|tee -a /entry.sh \
+ && echo 'trap stop INT TERM'|tee -a /entry.sh \
+ && echo ''|tee -a /entry.sh \
+ && echo 'function reload() {'|tee -a /entry.sh \
+ && echo '  service nginx restart'|tee -a /entry.sh \
+ && echo '  service php-fpm restart'|tee -a /entry.sh \
+ && echo '  service mysql-server restart'|tee -a /entry.sh \
+ && echo '}'|tee -a /entry.sh \
+ && echo 'trap reload HUP'|tee -a /entry.sh \
+ && echo ''|tee -a /entry.sh \
+ && echo '(kill -SIGSTOP $BASHPID)&'|tee -a /entry.sh \
+ && echo 'wait'|tee -a /entry.sh \
+ && chmod a+x /entry.sh

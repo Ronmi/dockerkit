@@ -22,6 +22,7 @@ class Dockerfile
     private $mergeBegin;
     private $currentDistro;
     private $distroName;
+    private $tmpUser;
 
     private function json($str)
     {
@@ -52,6 +53,7 @@ class Dockerfile
         $this->mergeBegin = false;
         $this->currentDistro = null;
         $this->distroName = '';
+        $this->tmpUser = array();
     }
 
     public function distro($distro = null)
@@ -263,6 +265,18 @@ class Dockerfile
         return $this;
     }
 
+    public function uStart($user)
+    {
+        $this->tmpUser[] = $this->user;
+        return $this->user($user);
+    }
+    public function uEnd()
+    {
+        if (count($this->tmpUser) < 1) {
+            return $this;
+        }
+        return $this->user(array_pop($this->tmpUser));
+    }
     public function getUser()
     {
         return $this->user;

@@ -183,10 +183,10 @@ class Dockerfile
      */
     public function textfileAs($content, $path, $user)
     {
-        $olduser = $this->getUser();
-        $this->user($user);
-        $this->textfile($content, $path);
-        return $this->user($olduser);
+        return $this
+            ->uStart($user)
+            ->textfile($content, $path)
+            ->uEnd();
     }
 
     /**
@@ -203,11 +203,11 @@ class Dockerfile
      */
     public function binaryfileAs($binary_string, $path, $user)
     {
-        $olduser = $this->getUser();
-        $this->user($user);
         $str = base64_encode($binary_string);
-        $this->shell(sprintf("echo '%s'|base64 -d > '%s'", $str, $path));
-        return $this->user($olduser);
+        return $this
+            ->uStart($user)
+            ->shell(sprintf("echo '%s'|base64 -d > '%s'", $str, $path))
+            ->uEnd();
     }
 
     /**
@@ -244,10 +244,7 @@ class Dockerfile
      */
     public function shellAs($cmd, $user)
     {
-        $olduser = $this->getUser();
-        $this->user($user);
-        $this->shell($cmd);
-        return $this->user($olduser);
+        return $this->uStart($user)->shell($cmd)->uEnd();
     }
 
     /**
@@ -264,10 +261,7 @@ class Dockerfile
      */
     public function execAs(array $cmd, $user)
     {
-        $olduser = $this->getUser();
-        $this->user($user);
-        $this->exec($cmd);
-        return $this->user($olduser);
+        return $this->uStart($user)->exec($cmd)->uEnd();
     }
 
     /**
@@ -283,10 +277,7 @@ class Dockerfile
      */
     public function bashAs($cmd, $user)
     {
-        $olduser = $this->getUser();
-        $this->user($user);
-        $this->bash($cmd);
-        return $this->user($olduser);
+        return $this->uStart($user)->bash($cmd)->uEnd();
     }
 
     /**

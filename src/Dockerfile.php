@@ -7,9 +7,12 @@ namespace Fruit\DockerKit;
  */
 class Dockerfile
 {
-    public static $supportedDistro = array(
-        'debian' => 'Fruit\DockerKit\Distro\Debian',
-    );
+    use Dockerfile\Distro;
+    use Dockerfile\Exec;
+    use Dockerfile\User;
+    use Dockerfile\File;
+    use Dockerfile\FileSystem;
+    use Dockerfile\Misc;
 
     private $data;
     private $user;
@@ -18,20 +21,7 @@ class Dockerfile
     private $mountableVolume;
     private $maintainer;
     private $grouping;
-    private $tmpGroup;
     private $readyToMerge;
-    private $currentDistro;
-    private $distroName;
-    private $tmpUser;
-
-    private function escapePath($path)
-    {
-        $file = str_replace("\\", "\\\\", $path);
-        $file = str_replace(' ', "\\ ", $file);
-        $file = str_replace('"', "\\\"", $file);
-        $file = str_replace("'", "\\'", $file);
-        return $file;
-    }
 
     private function json($str)
     {
@@ -61,26 +51,7 @@ class Dockerfile
         $this->exposedPort = array();
         $this->mountableVolume = array();
         $this->grouping = false;
-        $this->tmpGroup = array();
         $this->readyToMerge = true;
-        $this->currentDistro = null;
-        $this->distroName = '';
-        $this->tmpUser = array();
-    }
-
-    public function distro($distro = null)
-    {
-        if ($distro === null) {
-            return $this->distroName;
-        }
-        if (array_key_exists($distro, self::$supportedDistro)) {
-            $cls = self::$supportedDistro[$distro];
-            if (!($this->currentDistro instanceof $cls)) {
-                $this->distroName = $distro;
-                $this->currentDistro = new $cls($this);
-            }
-        }
-        return $this;
     }
 
     /**
@@ -101,181 +72,10 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
-    public function gStart($bool)
-    {
-        array_push($this->tmpGroup, $this->grouping);
-        return $this->grouping($bool);
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function gEnd()
-    {
-        if (count($this->tmpGroup) < 1) {
-            return $this;
-        }
-        return $this->grouping(array_pop($this->tmpGroup));
-    }
-
-    /**
-     * @return Dockerfile
-     */
     public function gReset()
     {
         $this->readyToMerge = false;
         return $this;
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function appendToFile($content, $path)
-    {
-        return $this->appendToFileArray(explode("\n", $content), $path);
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function appendToFileArray(array $content, $path)
-    {
-        $tmpl = 'echo %s|tee -a %s';
-        $merge = $this->grouping();
-        $this->grouping(true);
-        foreach ($content as $c) {
-            $this->shell(
-                sprintf(
-                    $tmpl,
-                    escapeshellarg($c),
-                    $this->escapePath($path)
-                )
-            );
-        }
-        return $this->grouping($merge);
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function textfile($content, $path)
-    {
-        return $this->textfileArray(explode("\n", $content), $path);
-    }
-
-    /**
-     * Create several textfiles at once.
-     *
-     * @return Dockerfile
-     */
-    public function textfiles(array $files)
-    {
-        foreach ($files as $path => $content) {
-            if (!is_array($content)) {
-                $content = explode("\n", $content);
-            }
-            $this->textfileArray($content, $path);
-        }
-        return $this;
-    }
-
-    /**
-     * Must not have newline character, or command generated will go wrong.
-     * @return Dockerfile
-     */
-    public function textfileArray(array $content, $path)
-    {
-        $file = $this->escapePath($path);
-        $tmpl = 'echo %s|%s';
-        $merge = $this->grouping();
-        $this->grouping(true);
-        $first = array_shift($content);
-        $this->shell(sprintf($tmpl, escapeshellarg($first), 'tee ' . $file));
-
-        foreach ($content as $line) {
-            $this->shell(
-                sprintf(
-                    $tmpl,
-                    escapeshellarg($line),
-                    'tee -a ' . $file
-                )
-            );
-        }
-        return $this->grouping($merge);
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function textfileAs($content, $path, $user)
-    {
-        return $this
-            ->uStart($user)
-            ->textfile($content, $path)
-            ->uEnd();
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function binaryfile($binaryString, $path)
-    {
-        $str = base64_encode($binaryString);
-        return $this->shell(sprintf("echo '%s'|base64 -d > %s", $str, $this->escapePath($path)));
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function binaryfileAs($binaryString, $path, $user)
-    {
-        $str = base64_encode($binaryString);
-        return $this
-            ->uStart($user)
-            ->shell(sprintf("echo '%s'|base64 -d > %s", $str, $this->escapePath($path)))
-            ->uEnd();
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function chmod($perm, array $files, array $options = null)
-    {
-        $opts = '';
-        if (is_array($options)) {
-            $options = array_map('escapeshellarg', $options);
-            $opts = ' ' . implode(' ', $options);
-        }
-        $files = array_map(array($this, 'escapePath'), $files);
-
-        $cmd = sprintf(
-            'chmod %s%s %s',
-            $perm,
-            $opts,
-            implode(' ', $files)
-        );
-        return $this->shell($cmd);
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function chown($owner, array $files, array $options = null)
-    {
-        $opts = '';
-        if (is_array($options)) {
-            $options = array_map('escapeshellarg', $options);
-            $opts = ' ' . implode(' ', $options);
-        }
-        $files = array_map(array($this, 'escapePath'), $files);
-
-        $cmd = sprintf(
-            'chown %s%s %s',
-            $owner,
-            $opts,
-            implode(' ', $files)
-        );
-        return $this->shell($cmd);
     }
 
     /**
@@ -312,69 +112,10 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
-    public function shellAs($cmd, $user)
-    {
-        return $this->uStart($user)->shell($cmd)->uEnd();
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function sudo($cmd, $user = '', array $args = null)
-    {
-        if ($user == '') {
-            $user = 'root';
-        }
-        if (!is_array($args)) {
-            $args = array();
-        }
-        $args = implode(' ', array_map(function ($val) {
-            return escapeshellarg($val);
-        }, $args));
-
-        return $this->shell(sprintf(
-            'sudo -u %s %s -- %s',
-            $user,
-            $args,
-            str_replace(
-                "\n",
-                "\\\n",
-                $cmd
-            )
-        ));
-    }
-
-    /**
-     * @return Dockerfile
-     */
     public function exec(array $cmd)
     {
         $this->data[] = 'RUN ' . $this->jsonStringArray($cmd);
         return $this;
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function execAs(array $cmd, $user)
-    {
-        return $this->uStart($user)->exec($cmd)->uEnd();
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function bash($cmd)
-    {
-        return $this->exec(array('bash', '-l', '-c', $cmd));
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function bashAs($cmd, $user)
-    {
-        return $this->uStart($user)->bash($cmd)->uEnd();
     }
 
     /**
@@ -411,51 +152,6 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
-    public function addGroup($group, $gid)
-    {
-        return $this->shellAs(sprintf('addgroup --gid %d %s', $gid, $group), 'root');
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function addUser($user, $uid, $gid, $home = '', $gecos = '')
-    {
-        if (!$gecos) {
-            $gecos = ',,,,,';
-        }
-        $cmd = sprintf(
-            'adduser --uid %d --gid %d --disabled-password --gecos %s ',
-            $uid,
-            $gid,
-            $gecos
-        );
-        if ($home === '') {
-            $home = '/home/' . $user;
-        }
-        $homeStr = '--home ' . $home . ' ';
-        if ($home === null) {
-            $homeStr = '--no-create-home ';
-        }
-        $cmd .= $homeStr . $user;
-        return $this->shellAs($cmd, 'root');
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function addSudoer($user)
-    {
-        return $this
-            ->uStart('root')
-            ->shell('mkdir -p /etc/sudoers.d')
-            ->textfile("$user ALL=(ALL:ALL) NOPASSWD: ALL", "/etc/sudoers.d/$user")
-            ->uEnd();
-    }
-
-    /**
-     * @return Dockerfile
-     */
     public function user($user)
     {
         if ($user != $this->user) {
@@ -463,26 +159,6 @@ class Dockerfile
             $this->user = $user;
         }
         return $this;
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function uStart($user)
-    {
-        $this->tmpUser[] = $this->user;
-        return $this->user($user);
-    }
-
-    /**
-     * @return Dockerfile
-     */
-    public function uEnd()
-    {
-        if (count($this->tmpUser) < 1) {
-            return $this;
-        }
-        return $this->user(array_pop($this->tmpUser));
     }
 
     /**
@@ -556,16 +232,5 @@ class Dockerfile
             $ret .= 'VOLUME ' . $this->jsonStringArray($vols) . "\n";
         }
         return $ret;
-    }
-
-    /// wrap distro
-    public function __call($name, array $args)
-    {
-        if (method_exists('Fruit\DockerKit\Distro\Distro', $name)) {
-            $this->gStart(true);
-            call_user_func_array(array($this->currentDistro, $name), $args);
-            $this->gEnd();
-        }
-        return $this;
     }
 }

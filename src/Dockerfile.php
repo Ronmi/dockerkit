@@ -19,7 +19,7 @@ class Dockerfile
     private $maintainer;
     private $grouping;
     private $tmpGroup;
-    private $mergeBegin;
+    private $readyToMerge;
     private $currentDistro;
     private $distroName;
     private $tmpUser;
@@ -62,7 +62,7 @@ class Dockerfile
         $this->mountableVolume = array();
         $this->grouping = false;
         $this->tmpGroup = array();
-        $this->mergeBegin = false;
+        $this->readyToMerge = true;
         $this->currentDistro = null;
         $this->distroName = '';
         $this->tmpUser = array();
@@ -94,7 +94,6 @@ class Dockerfile
         $tmp = $merge == true;
         if ($this->grouping != $tmp) {
             $this->grouping = $tmp;
-            $this->mergeBegin = false;
         }
         return $this;
     }
@@ -117,6 +116,15 @@ class Dockerfile
             return $this;
         }
         return $this->grouping(array_pop($this->tmpGroup));
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function gReset()
+    {
+        $this->readyToMerge = false;
+        return $this;
     }
 
     /**
@@ -242,9 +250,11 @@ class Dockerfile
      */
     public function shell($cmd)
     {
+        $ready = $this->readyToMerge;
+        $this->readyToMerge = true;
         if ($this->grouping) {
             $last = count($this->data) - 1;
-            if ($last >= 0 and is_array($this->data[$last])) {
+            if ($ready and $last >= 0 and is_array($this->data[$last])) {
                 $this->data[$last][] = $cmd;
                 return $this;
             }

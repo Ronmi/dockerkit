@@ -9,3 +9,5 @@ RUN f
 RUN ["g","g"]
 RUN h \
  && i
+RUN j \
+ && k

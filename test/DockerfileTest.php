@@ -137,7 +137,10 @@ class DockerfileTest extends PHPUnit_Framework_TestCase
             ->shell('f')
             ->exec(['g', 'g'])
             ->shell('h')
-            ->shell('i');
+            ->shell('i')
+            ->gReset()
+            ->shell('j')
+            ->shell('k');
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.mergerun');

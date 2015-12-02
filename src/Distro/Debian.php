@@ -139,18 +139,22 @@ class Debian implements Distro
             '{',
         );
         $tail = array('}');
-        $body = array_map(function ($v) {
-            return '  "' . $v . '";';
-        }, $value);
+        $body = array_map(
+            function ($v) {
+                return '  "' . $v . '";';
+            }, $value
+        );
         $this->dest->appendToFileArray(array_merge($head, $body, $tail), self::APTCONF);
         return $this;
     }
 
     private function aptpref(array $pref)
     {
-        $v = array_map(function ($k, $v) {
-            return "$k: $v";
-        }, array_keys($pref), $pref);
+        $v = array_map(
+            function ($k, $v) {
+                return "$k: $v";
+            }, array_keys($pref), $pref
+        );
         $this->dest->appendToFileArray($v, self::APTPREF);
         return $this;
     }
@@ -175,19 +179,23 @@ class Debian implements Distro
 
     private function debconf($data)
     {
-        $this->dest->shell(sprintf(
-            'echo %s|debconf-set-selections',
-            escapeshellarg($data)
-        ));
+        $this->dest->shell(
+            sprintf(
+                'echo %s|debconf-set-selections',
+                escapeshellarg($data)
+            )
+        );
         return $this;
     }
 
     private function reconf($pkg)
     {
-        $this->dest->shell(sprintf(
-            'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure %s',
-            $pkg
-        ));
+        $this->dest->shell(
+            sprintf(
+                'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure %s',
+                $pkg
+            )
+        );
         return $this;
     }
 

@@ -142,7 +142,8 @@ class Debian implements Distro
         $body = array_map(
             function ($v) {
                 return '  "' . $v . '";';
-            }, $value
+            },
+            $value
         );
         $this->dest->appendToFileArray(array_merge($head, $body, $tail), self::APTCONF);
         return $this;
@@ -153,7 +154,9 @@ class Debian implements Distro
         $v = array_map(
             function ($k, $v) {
                 return "$k: $v";
-            }, array_keys($pref), $pref
+            },
+            array_keys($pref),
+            $pref
         );
         $this->dest->appendToFileArray($v, self::APTPREF);
         return $this;

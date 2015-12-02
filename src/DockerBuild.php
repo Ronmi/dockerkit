@@ -13,6 +13,9 @@ class DockerBuild extends Docker
         $this->option('-t', $name);
     }
 
+    /**
+     * @return string
+     */
     public function generate()
     {
         $this->arg('-');

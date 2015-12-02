@@ -14,6 +14,9 @@ class DockerCreate extends Docker
         $this->option('--name', $name);
     }
 
+    /**
+     * @return Docker
+     */
     public function port($host, $cont = -1)
     {
         if ($cont < 1) {
@@ -22,25 +25,34 @@ class DockerCreate extends Docker
         $this->option('-p', sprintf('%d:%d', $host, $cont));
     }
 
+    /**
+     * @return Docker
+     */
     public function link($cont, $alias = null)
     {
         if (! $alias) {
             $alias = $cont;
         }
-        $this->option('--link', sprintf('%s:%s', $cont, $alias));
+        return $this->option('--link', sprintf('%s:%s', $cont, $alias));
     }
 
+    /**
+     * @return Docker
+     */
     public function volume($host, $cont = null)
     {
         if (! $cont) {
             $cont = $host;
         }
-        $this->option('-v', sprintf('%s:%s', $host, $cont));
+        return $this->option('-v', sprintf('%s:%s', $host, $cont));
     }
 
+    /**
+     * @return Docker
+     */
     public function shell(array $cmd)
     {
-        $this->arg($cmd);
+        return $this->arg($cmd);
     }
 
     public function exec(array $cmds)

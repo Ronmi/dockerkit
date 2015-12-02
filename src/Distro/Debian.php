@@ -49,6 +49,9 @@ class Debian implements Distro
         return $this;
     }
 
+    /**
+     * @return Debian
+     */
     public function install(array $packages)
     {
         if (!$this->updated) {
@@ -102,6 +105,9 @@ class Debian implements Distro
         return $this;
     }
 
+    /**
+     * @return Debian
+     */
     public function repo(array $repos)
     {
         $repoLines = array_keys($repos);
@@ -149,6 +155,9 @@ class Debian implements Distro
         return $this;
     }
 
+    /**
+     * @return Debian
+     */
     public function pmsconf(array $config)
     {
         if (isset($config['conf'])) {
@@ -182,6 +191,9 @@ class Debian implements Distro
         return $this;
     }
 
+    /**
+     * @return Debian
+     */
     public function pkgconf($pkg, $config = null)
     {
         if (isset($config['data'])) {
@@ -198,6 +210,9 @@ class Debian implements Distro
         return $this->reconf($pkg);
     }
 
+    /**
+     * @return Debian
+     */
     public function ensureBash()
     {
         $this->debconf('dash dash/sh boolean false');
@@ -205,6 +220,9 @@ class Debian implements Distro
         return $this;
     }
 
+    /**
+     * @return Debian
+     */
     public function tz($tz)
     {
         $this->dest->textfile($tz, '/etc/timezone');

@@ -14,6 +14,9 @@ class Docker
         $this->args = array();
     }
 
+    /**
+     * @return Docker
+     */
     protected function option($opt, $val = null)
     {
         $this->options[] = $opt;
@@ -23,6 +26,9 @@ class Docker
         return $this;
     }
 
+    /**
+     * @return Docker
+     */
     protected function arg($arg)
     {
         if (is_array($arg)) {
@@ -34,6 +40,9 @@ class Docker
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function generate()
     {
         return sprintf(

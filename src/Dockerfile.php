@@ -239,6 +239,48 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
+    public function chmod($perm, array $files, array $options = null)
+    {
+        $opts = '';
+        if (is_array($options)) {
+            $options = array_map('escapeshellarg', $options);
+            $opts = ' ' . implode(' ', $options);
+        }
+        $files = array_map(array($this, 'escapePath'), $files);
+
+        $cmd = sprintf(
+            'chmod %s%s %s',
+            $perm,
+            $opts,
+            implode(' ', $files)
+        );
+        return $this->shell($cmd);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function chown($owner, array $files, array $options = null)
+    {
+        $opts = '';
+        if (is_array($options)) {
+            $options = array_map('escapeshellarg', $options);
+            $opts = ' ' . implode(' ', $options);
+        }
+        $files = array_map(array($this, 'escapePath'), $files);
+
+        $cmd = sprintf(
+            'chown %s%s %s',
+            $owner,
+            $opts,
+            implode(' ', $files)
+        );
+        return $this->shell($cmd);
+    }
+
+    /**
+     * @return Dockerfile
+     */
     public function add(array $files)
     {
         $this->data[] = 'ADD ' . $this->jsonStringArray($files);

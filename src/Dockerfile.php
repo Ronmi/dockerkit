@@ -43,9 +43,12 @@ class Dockerfile
 
     private function jsonStringArray(array $arr)
     {
-        array_walk($arr, function (&$v) {
-            $v = (string)$v;
-        });
+        array_walk(
+            $arr,
+            function (&$v) {
+                $v = (string)$v;
+            }
+        );
         return $this->json($arr);
     }
 
@@ -182,11 +185,13 @@ class Dockerfile
         $this->shell(sprintf($tmpl, escapeshellarg($first), 'tee ' . $file));
 
         foreach ($content as $line) {
-            $this->shell(sprintf(
-                $tmpl,
-                escapeshellarg($line),
-            ));
+            $this->shell(
+                sprintf(
+                    $tmpl,
+                    escapeshellarg($line),
                     'tee -a ' . $file
+                )
+            );
         }
         return $this->grouping($merge);
     }
@@ -453,12 +458,15 @@ class Dockerfile
     {
         $ret = 'FROM ' . $this->from . "\n";
         $ret .= 'MAINTAINER ' . $this->maintainer . "\n";
-        $data = array_map(function ($v) {
-            if (is_array($v)) {
-                return 'RUN ' . implode(" \\\n && ", $v);
-            }
-            return $v;
-        }, $this->data);
+        $data = array_map(
+            function ($v) {
+                if (is_array($v)) {
+                    return 'RUN ' . implode(" \\\n && ", $v);
+                }
+                return $v;
+            },
+            $this->data
+        );
         $ret .= implode("\n", $data) . "\n";
         if (count($this->exposed_port) > 0) {
             $ports = array_unique($this->exposed_port);

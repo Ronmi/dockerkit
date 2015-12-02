@@ -59,8 +59,8 @@ class Dockerfile
         if ($distro === null) {
             return $this->distroName;
         }
-        if (array_key_exists($distro, self::supportedDistro)) {
-            $d = self::supportedDistro[$distro];
+        if (array_key_exists($distro, self::$supportedDistro)) {
+            $d = self::$supportedDistro[$distro];
             if (!($this->currentDistro instanceof $d)) {
                 $this->distroName = $distro;
                 $this->currentDistro = new $d($this);

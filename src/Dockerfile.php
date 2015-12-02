@@ -14,8 +14,8 @@ class Dockerfile
     private $data;
     private $user;
     private $from;
-    private $exposed_port;
-    private $mountable_volume;
+    private $exposedPort;
+    private $mountableVolume;
     private $maintainer;
     private $grouping;
     private $tmpGroup;
@@ -45,8 +45,8 @@ class Dockerfile
     {
         array_walk(
             $arr,
-            function (&$v) {
-                $v = (string)$v;
+            function (&$val) {
+                $val = (string)$val;
             }
         );
         return $this->json($arr);
@@ -58,8 +58,8 @@ class Dockerfile
         $this->user = $defaultUser;
         $this->maintainer = $maintainer;
         $this->data = array();
-        $this->exposed_port = array();
-        $this->mountable_volume = array();
+        $this->exposedPort = array();
+        $this->mountableVolume = array();
         $this->grouping = false;
         $this->tmpGroup = array();
         $this->mergeBegin = false;
@@ -74,10 +74,10 @@ class Dockerfile
             return $this->distroName;
         }
         if (array_key_exists($distro, self::$supportedDistro)) {
-            $d = self::$supportedDistro[$distro];
-            if (!($this->currentDistro instanceof $d)) {
+            $cls = self::$supportedDistro[$distro];
+            if (!($this->currentDistro instanceof $cls)) {
                 $this->distroName = $distro;
-                $this->currentDistro = new $d($this);
+                $this->currentDistro = new $cls($this);
             }
         }
         return $this;
@@ -210,18 +210,18 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
-    public function binaryfile($binary_string, $path)
+    public function binaryfile($binaryString, $path)
     {
-        $str = base64_encode($binary_string);
+        $str = base64_encode($binaryString);
         return $this->shell(sprintf("echo '%s'|base64 -d > %s", $str, $this->escapePath($path)));
     }
 
     /**
      * @return Dockerfile
      */
-    public function binaryfileAs($binary_string, $path, $user)
+    public function binaryfileAs($binaryString, $path, $user)
     {
-        $str = base64_encode($binary_string);
+        $str = base64_encode($binaryString);
         return $this
             ->uStart($user)
             ->shell(sprintf("echo '%s'|base64 -d > %s", $str, $this->escapePath($path)))
@@ -343,7 +343,7 @@ class Dockerfile
      */
     public function expose(array $port)
     {
-        $this->exposed_port = array_merge($this->exposed_port, $port);
+        $this->exposedPort = array_merge($this->exposedPort, $port);
         return $this;
     }
 
@@ -352,7 +352,7 @@ class Dockerfile
      */
     public function volume(array $vol)
     {
-        $this->mountable_volume = array_merge($this->mountable_volume, $vol);
+        $this->mountableVolume = array_merge($this->mountableVolume, $vol);
         return $this;
     }
 
@@ -462,18 +462,18 @@ class Dockerfile
     /**
      * @return array
      */
-    public function lastNCommand($n = 0, array $rep = null)
+    public function lastNCommand($num = 0, array $rep = null)
     {
-        if ($n < 1) {
-            $n = 1;
+        if ($num < 1) {
+            $num = 1;
         }
 
         if ($rep === null) {
-            return array_slice($this->data, count($this->data) - $n);
+            return array_slice($this->data, count($this->data) - $num);
         }
 
         $this->data = array_merge(
-            array_slice($this->data, 0, count($this->data) - $n),
+            array_slice($this->data, 0, count($this->data) - $num),
             $rep
         );
     }
@@ -486,21 +486,21 @@ class Dockerfile
         $ret = 'FROM ' . $this->from . "\n";
         $ret .= 'MAINTAINER ' . $this->maintainer . "\n";
         $data = array_map(
-            function ($v) {
-                if (is_array($v)) {
-                    return 'RUN ' . implode(" \\\n && ", $v);
+            function ($val) {
+                if (is_array($val)) {
+                    return 'RUN ' . implode(" \\\n && ", $val);
                 }
-                return $v;
+                return $val;
             },
             $this->data
         );
         $ret .= implode("\n", $data) . "\n";
-        if (count($this->exposed_port) > 0) {
-            $ports = array_unique($this->exposed_port);
+        if (count($this->exposedPort) > 0) {
+            $ports = array_unique($this->exposedPort);
             $ret .= 'EXPOSE ' . implode(' ', $ports) . "\n";
         }
-        if (count($this->mountable_volume) > 0) {
-            $vols = array_unique($this->mountable_volume);
+        if (count($this->mountableVolume) > 0) {
+            $vols = array_unique($this->mountableVolume);
             $ret .= 'VOLUME ' . $this->jsonStringArray($vols) . "\n";
         }
         return $ret;

@@ -22,12 +22,12 @@ class DockerBuild extends Docker
         return parent::generate();
     }
 
-    public function run(Dockerfile $f)
+    public function run(Dockerfile $file)
     {
         $cmd = $this->generate();
-        $p = proc_open($cmd, [['pipe', 'r']], $pipes);
-        fwrite($pipes[0], $f->generate());
+        $proc = proc_open($cmd, [['pipe', 'r']], $pipes);
+        fwrite($pipes[0], $file->generate());
         fclose($pipes[0]);
-        proc_close($p);
+        proc_close($proc);
     }
 }

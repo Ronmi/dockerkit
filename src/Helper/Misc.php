@@ -46,4 +46,12 @@ trait Misc
         }
         return $this->user(array_pop($this->tmpUser));
     }
+
+    /**
+     * @return Dockerfile
+     */
+    public function install(Installer $installer)
+    {
+        $installer->installTo($this);
+    }
 }

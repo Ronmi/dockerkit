@@ -25,7 +25,7 @@ trait Exec
      */
     public function bash($cmd)
     {
-        return $this->exec(array('bash', '-l', '-c', $cmd));
+        return $this->exec(array('bash', '-c', $cmd));
     }
 
     /**

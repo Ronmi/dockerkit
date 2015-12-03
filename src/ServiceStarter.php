@@ -120,7 +120,7 @@ class ServiceStarter implements Installer
         $file
             ->gStart(true)
             ->textfileArray($content, $this->path)
-            ->chmod('a+x', array($this->path))
+            ->chmod('a+x', $this->path)
             ->gEnd();
     }
 }

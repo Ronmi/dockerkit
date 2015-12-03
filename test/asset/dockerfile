@@ -9,9 +9,9 @@ RUN ["service","foo","start"]
 USER user
 RUN ["service","foo","start"]
 USER root
-RUN ["bash","-l","-c","echo \"test\""]
+RUN ["bash","-c","echo \"test\""]
 USER user
-RUN ["bash","-l","-c","echo \"test\""]
+RUN ["bash","-c","echo \"test\""]
 USER root
 RUN sudo -u root '-E' -- echo "test"
 WORKDIR /test

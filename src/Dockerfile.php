@@ -13,6 +13,7 @@ class Dockerfile
     use Helper\File;
     use Helper\FileSystem;
     use Helper\Misc;
+    use Helper\Download;
 
     private $data;
     private $user;

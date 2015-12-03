@@ -16,7 +16,7 @@ trait FileSystem
     /**
      * @return Dockerfile
      */
-    public function chmod($perm, array $files, array $options = null)
+    public function chmods($perm, array $files, array $options = null)
     {
         $opts = '';
         if (is_array($options)) {
@@ -37,7 +37,7 @@ trait FileSystem
     /**
      * @return Dockerfile
      */
-    public function chown($owner, array $files, array $options = null)
+    public function chowns($owner, array $files, array $options = null)
     {
         $opts = '';
         if (is_array($options)) {
@@ -53,5 +53,21 @@ trait FileSystem
             implode(' ', $files)
         );
         return $this->shell($cmd);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function chmod($perm, $file, array $options = null)
+    {
+        return $this->chmods($perm, array($file), $options);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function chown($owner, $file, array $options = null)
+    {
+        return $this->chowns($owner, array($file), $options);
     }
 }

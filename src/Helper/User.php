@@ -5,6 +5,9 @@ namespace Fruit\DockerKit\Helper;
 trait User
 {
     /**
+     * Be aware when using pipe or redirection.
+     * Passing 'some_command > some_file' to sudo() will run some_command with sudo,
+     * and redirect output to some_file with current user.
      * @return Dockerfile
      */
     public function sudo($cmd, $user = '', array $args = null)

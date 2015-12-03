@@ -16,8 +16,8 @@ class FileSystemTest extends PHPUnit_Framework_TestCase
     {
         $g = $this->ndf();
 
-        $g->chmod('a+r', ['~/test'], ['-R']);
-        $g->chown('me:us', ['~/test'], ['-R']);
+        $g->chmod('a+r', '~/test', ['-R']);
+        $g->chown('me:us', '~/test', ['-R']);
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.filesystem');

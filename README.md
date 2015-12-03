@@ -25,7 +25,7 @@ $f
         '(kill -STOP $BASHPID)&',
         'wait',
     ], '/start.sh')
-    ->chmod('a+x', ['/start.sh'])
+    ->chmod('a+x', '/start.sh')
     ->grouping(false)
     ->entrypoint(['bash', '/start.sh']);
 

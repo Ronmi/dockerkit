@@ -2,6 +2,8 @@
 
 namespace Fruit\DockerKit\Helper;
 
+use Fruit\DockerKit\Installer;
+
 trait Misc
 {
     private $tmpGroup = array();
@@ -50,8 +52,9 @@ trait Misc
     /**
      * @return Dockerfile
      */
-    public function install(Installer $installer)
+    public function inst(Installer $installer)
     {
         $installer->installTo($this);
+        return $this;
     }
 }

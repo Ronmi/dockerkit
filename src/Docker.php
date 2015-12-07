@@ -17,7 +17,7 @@ class Docker
     /**
      * @return Docker
      */
-    protected function option($opt, $val = null)
+    public function option($opt, $val = null)
     {
         $this->options[] = $opt;
         if ($val !== null) {
@@ -29,7 +29,7 @@ class Docker
     /**
      * @return Docker
      */
-    protected function arg($arg)
+    public function arg($arg)
     {
         if (is_array($arg)) {
             $this->args = array_merge($this->args, $arg);

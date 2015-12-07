@@ -148,4 +148,30 @@ trait FileSystem
             $this->escapePath($dest)
         ));
     }
+
+    /**
+     * @return Dockerfile
+     */
+    public function remove($src, $dest, array $opts = null)
+    {
+        return $this->removeArray(array($src), $dest, $opts);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function removeArray(array $src, $dest, array $opts = null)
+    {
+        $args = '';
+        if ($opts != null) {
+            $args = ' ' . implode(' ', array_map('escapeshellarg', $opts));
+        }
+        $src = array_map(array($this, 'escapePath'), $src);
+        return $this->shell(sprintf(
+            'rm%s %s %s',
+            $args,
+            implode(' ', $src),
+            $this->escapePath($dest)
+        ));
+    }
 }

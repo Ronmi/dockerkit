@@ -21,6 +21,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase
         $g->symlink('/usr/lib/libtest.*', '/usr/lib/libtest/');
         $g->move('/usr/lib/libtest.*', '/usr/lib/libtest/');
         $g->copy('/usr/lib/libtest.*', '/usr/lib/libtest/');
+        $g->remove('/usr/lib/libtest.*', '/usr/lib/libtest/', ['-fr']);
 
         $actual = $g->generate();
         $expect = file_get_contents(__DIR__ . '/asset/dockerfile.filesystem');

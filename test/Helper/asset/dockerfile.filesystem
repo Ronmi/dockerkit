@@ -4,3 +4,4 @@ RUN chmod a+r '-R' ~/test
 RUN chown me:us '-R' ~/test
 RUN ln -s /usr/lib/libtest.* /usr/lib/libtest/
 RUN mv /usr/lib/libtest.* /usr/lib/libtest/
+RUN cp /usr/lib/libtest.* /usr/lib/libtest/

@@ -122,4 +122,30 @@ trait FileSystem
             $this->escapePath($dest)
         ));
     }
+
+    /**
+     * @return Dockerfile
+     */
+    public function copy($src, $dest, array $opts = null)
+    {
+        return $this->copyArray(array($src), $dest, $opts);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function copyArray(array $src, $dest, array $opts = null)
+    {
+        $args = '';
+        if ($opts != null) {
+            $args = ' ' . implode(' ', escapeshellarg($opts));
+        }
+        $src = array_map(array($this, 'escapePath'), $src);
+        return $this->shell(sprintf(
+            'cp%s %s %s',
+            $args,
+            implode(' ', $src),
+            $this->escapePath($dest)
+        ));
+    }
 }

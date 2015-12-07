@@ -12,6 +12,7 @@ class Docker
     {
         $this->action = $action;
         $this->args = array();
+        $this->options = array();
     }
 
     /**

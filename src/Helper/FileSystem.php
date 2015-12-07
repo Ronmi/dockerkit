@@ -86,7 +86,7 @@ trait FileSystem
     {
         $args = '';
         if ($opts != null) {
-            $args = ' ' . implode(' ', escapeshellarg($opts));
+            $args = ' ' . implode(' ', array_map('escapeshellarg', $opts));
         }
         $src = array_map(array($this, 'escapePath'), $src);
         return $this->shell(sprintf(
@@ -112,7 +112,7 @@ trait FileSystem
     {
         $args = '';
         if ($opts != null) {
-            $args = ' ' . implode(' ', escapeshellarg($opts));
+            $args = ' ' . implode(' ', array_map('escapeshellarg', $opts));
         }
         $src = array_map(array($this, 'escapePath'), $src);
         return $this->shell(sprintf(
@@ -138,7 +138,7 @@ trait FileSystem
     {
         $args = '';
         if ($opts != null) {
-            $args = ' ' . implode(' ', escapeshellarg($opts));
+            $args = ' ' . implode(' ', array_map('escapeshellarg', $opts));
         }
         $src = array_map(array($this, 'escapePath'), $src);
         return $this->shell(sprintf(

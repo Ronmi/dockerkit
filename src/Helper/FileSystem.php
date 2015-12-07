@@ -70,4 +70,56 @@ trait FileSystem
     {
         return $this->chowns($owner, array($file), $options);
     }
+
+    /**
+     * @return Dockerfile
+     */
+    public function symlink($src, $dest, array $opts = null)
+    {
+        return $this->symlinkArray(array($src), $dest, $opts);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function symlinkArray(array $src, $dest, array $opts = null)
+    {
+        $args = '';
+        if ($opts != null) {
+            $args = ' ' . implode(' ', escapeshellarg($opts));
+        }
+        $src = array_map(array($this, 'escapePath'), $src);
+        return $this->shell(sprintf(
+            'ln -s%s %s %s',
+            $args,
+            implode(' ', $src),
+            $this->escapePath($dest)
+        ));
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function move($src, $dest, array $opts = null)
+    {
+        return $this->moveArray(array($src), $dest, $opts);
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function moveArray(array $src, $dest, array $opts = null)
+    {
+        $args = '';
+        if ($opts != null) {
+            $args = ' ' . implode(' ', escapeshellarg($opts));
+        }
+        $src = array_map(array($this, 'escapePath'), $src);
+        return $this->shell(sprintf(
+            'mv%s %s %s',
+            $args,
+            implode(' ', $src),
+            $this->escapePath($dest)
+        ));
+    }
 }

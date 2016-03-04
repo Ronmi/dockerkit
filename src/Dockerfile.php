@@ -91,6 +91,28 @@ class Dockerfile
     /**
      * @return Dockerfile
      */
+    public function env($key, $value)
+    {
+        $this->data[] = sprintf('ENV %s "%s"', $key, $value);
+        return $this;
+    }
+
+    /**
+     * @return Dockerfile
+     */
+    public function arg($key, $default = "")
+    {
+        $def = $key;
+        if ($default != '') {
+           $def .= '="' . $default . '"';
+        }
+        $this->data[] = 'ARG ' . $def;
+        return $this;
+    }
+
+    /**
+     * @return Dockerfile
+     */
     public function shell($cmd)
     {
         $ready = $this->readyToMerge;
